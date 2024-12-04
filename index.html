@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"="width=device-width, initial-scale=1.0">
+  <title>待办事项应用</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    #app {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      font-size: 18px;
+      color: #333;
+    }
+
+   .checkbox-wrapper {
+      margin-right: 10px;
+    }
+
+   .checkbox {
+      margin-bottom: 0;
+    }
+
+   .button-group {
+      margin-left: auto;
+    }
+
+   .button-group button {
+      margin-right: 5px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+   .edit-button,
+   .save-button,
+   .delete-button {
+      background-color: #ff6b6b;
+      margin-left: 10px;
+    }
+
+   .edit-button:hover {
+      background-color: #ff4d4d;
+    }
+
+   .save-button:hover {
+      background-color: #ff4d4d;
+    }
+
+   .delete-button:hover {
+      background-color: #cc0000;
+    }
+
+   .completed {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+   .edit-input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <h1>待办事项列表</h1>
+    <form @submit.prevent="addToDo">
+      <input type="text" v-model="newTodo" placeholder="添加新事项">
+      <button type="submit">添加</button>
+    </form>
+    <ul>
+      <li v-for="(todo, index) in todoList" :key="todo.id">
+        <div class="checkbox-wrapper">
+          <input type="checkbox" class="checkbox" v-model="todo.done" @change="updateDoneStatus(todo.id)">
+        </div>
+        <span v-if="!isEditing || isEditing!== todo.id" :class="{ completed: todo.done }">{{ todo.label }}</span>
+        <input v-else type="text" v-model="todo.editLabel" class="edit-input" placeholder="编辑事项内容">
+        <div class="button-group">
+          <button class="edit-button" @click="toggleEditMode(todo.id)">编辑</button>
+          <button class="save-button" @click="saveEditedTodo(todo.id, todo.editLabel)">保存</button>
+          <button class="delete-button" @click="deleteTodo(todo.id)">删除</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <script src="vue.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          newTodo: '',
+          todoList: [
+            { id: 1, label: '学习JavaScript', done: false, editLabel: '' },
+            { id: 2, label: '阅读一本好书', done: false, editLabel: '' },
+            { id: 3, label: '锻炼身体', done: true, editLabel: '' }
+          ],
+          isEditing: null
+        };
+      },
+      methods: {
+        addToDo() {
+          if (this.newTodo.trim()!== '') {
+            this.todoList.push({
+              id: Date.now(),
+              label: this.newTodo,
+              done: false,
+              editLabel: ''
+            });
+            this.newTodo = '';
+          }
+        },
+        updateDoneStatus(id) {
+    const todo = this.todoList.find(t => t.id === id);
+    todo.done =!todo.done;
+    this.$forceUpdate(); // 强制Vue重新渲染，使样式能及时更新
+        },
+        toggleEditMode(id) {
+          this.isEditing = id === this.isEditing? null : id;
+        },
+        deleteTodo(id) {
+          const index = this.todoList.findIndex(t => t.id === id);
+          if (index!== -1) {
+            this.todoList.splice(index, 1);
+          }
+        },
+        saveEditedTodo(id, newLabel) {
+          const todo = this.todoList.find(t => t.id === id);
+          if (todo) {
+            todo.label = newLabel;
+            todo.editLabel = '';
+          }
+          this.isEditing = null;
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
